@@ -73,6 +73,7 @@ transmission_remote_gtk_SOURCES = \
 	  trg-toolbar.c \
 	  trg-menu-bar.c \
 	  trg-status-bar.c \
+          trg-torrent-graph3.c \
 	  trg-file-parser.c \
 	  trg-json-widgets.c \
 	  trg-model.c \
