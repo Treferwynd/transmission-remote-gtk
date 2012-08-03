@@ -203,7 +203,6 @@ static gboolean torrent_tv_button_pressed_cb(GtkWidget * treeview,
                                              gpointer userdata);
 static gboolean torrent_tv_popup_menu_cb(GtkWidget * treeview,
                                          gpointer userdata);
-static void trg_main_window_set_hidden_to_tray(TrgMainWindow *win, gboolean hidden);
 static gboolean is_ready_for_torrent_action(TrgMainWindow * win);
 static gboolean window_state_event(TrgMainWindow * win,
                                    GdkEventWindowState * event,
@@ -250,7 +249,6 @@ struct _TrgMainWindowPrivate {
     GtkWidget *hpaned, *vpaned;
     GtkWidget *filterEntry;
 
-    gboolean hidden;
     gint width, height;
     guint timerId;
     guint sessionTimerId;
@@ -1780,13 +1778,16 @@ status_icon_activated(GtkStatusIcon * icon G_GNUC_UNUSED,
                       TrgMainWindow * win)
 {
     TrgMainWindowPrivate *priv = win->priv;
-    TrgPrefs *prefs = trg_client_get_prefs(priv->client);
 
-	trg_main_window_set_hidden_to_tray(win,
-			!priv->hidden
-					&& trg_prefs_get_bool(prefs,
-							TRG_PREFS_KEY_SYSTEM_TRAY_MINIMISE,
-							TRG_PREFS_GLOBAL));
+    gtk_window_deiconify(GTK_WINDOW(win));
+    gtk_window_present(GTK_WINDOW(win));
+
+    if (priv->timerId > 0) {
+        g_source_remove(priv->timerId);
+        dispatch_async(priv->client,
+                       torrent_get(TORRENT_GET_TAG_MODE_FULL),
+                       on_torrent_get_update, win);
+    }
 }
 
 static gboolean
@@ -2350,26 +2351,6 @@ torrent_tv_popup_menu_cb(GtkWidget * treeview, gpointer userdata)
     return TRUE;
 }
 
-static void trg_main_window_set_hidden_to_tray(TrgMainWindow *win, gboolean hidden) {
-
-	TrgMainWindowPrivate *priv = win->priv;
-
-	if (hidden) {
-		gtk_widget_hide(GTK_WIDGET(win));
-	} else {
-		gtk_window_deiconify(GTK_WINDOW(win) );
-		gtk_window_present(GTK_WINDOW(win) );
-
-		if (priv->timerId > 0) {
-			g_source_remove(priv->timerId);
-			dispatch_async(priv->client, torrent_get(TORRENT_GET_TAG_MODE_FULL),
-					on_torrent_get_update, win);
-		}
-	}
-
-	priv->hidden = hidden;
-}
-
 static gboolean
 window_state_event(TrgMainWindow * win,
                    GdkEventWindowState * event, gpointer trayIcon)
@@ -2382,7 +2363,7 @@ window_state_event(TrgMainWindow * win,
         && (event->new_window_state & GDK_WINDOW_STATE_ICONIFIED)
         && trg_prefs_get_bool(prefs, TRG_PREFS_KEY_SYSTEM_TRAY_MINIMISE,
                               TRG_PREFS_GLOBAL)) {
-        trg_main_window_set_hidden_to_tray(win, TRUE);
+        gtk_widget_hide(GTK_WIDGET(win));
         return TRUE;
     }
 
@@ -2745,7 +2726,7 @@ static GObject *trg_main_window_constructor(GType type,
         gtk_paned_set_position(GTK_PANED(priv->hpaned), pos);
 
     if (tray && priv->min_on_start)
-        trg_main_window_set_hidden_to_tray(self, TRUE);
+        gtk_widget_hide(GTK_WIDGET(self));
 
     /* Drag and Drop */
     gtk_drag_dest_set(GTK_WIDGET(self), /* widget that will accept a drop */
