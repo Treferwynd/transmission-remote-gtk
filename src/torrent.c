@@ -220,6 +220,30 @@ gint64 torrent_get_activity_date(JsonObject * t)
     return json_object_get_int_member(t, FIELD_ACTIVITY_DATE);
 }
 
+/***************************************/
+/***************** WIP *****************/
+/***************************************/
+gboolean torrent_is_recent(JsonObject * t)
+{
+	gint64 completedAt, nowEpoch, days_passed;
+
+	/* Get epoch times and calculate days passed */
+	completedAt = torrent_get_done_date(t);
+	GDateTime *now = g_date_time_new_now_local();
+	nowEpoch = g_date_time_to_unix(now);
+    g_date_time_unref(now);
+
+	days_passed = (nowEpoch - completedAt)/(G_TIME_SPAN_DAY/G_TIME_SPAN_SECOND);
+
+	gboolean ret = FALSE;
+
+	/* if it's been completed less than a day ago, show it */
+	if(days_passed <= 1)
+		ret = TRUE;
+
+	return ret;
+}
+
 guint32
 torrent_get_flags(JsonObject * t, gint64 rpcv, gint64 status,
                   gint64 fileCount, gint64 downRate, gint64 upRate)
@@ -229,7 +253,17 @@ torrent_get_flags(JsonObject * t, gint64 rpcv, gint64 status,
     if (fileCount > 0 && torrent_get_is_finished(t) == TRUE)
         flags |= TORRENT_FLAG_COMPLETE;
     else
+	{
         flags |= TORRENT_FLAG_INCOMPLETE;
+		flags |= TORRENT_FLAG_DERPING;
+	}
+
+	/***************************************/
+	/***************** WIP *****************/
+	/***************************************/
+	/* TODO STUFF HERE! PUT SHIT IN DA IF! */
+	if (torrent_is_recent(t))
+		flags |= TORRENT_FLAG_DERPING;
 
     if (rpcv >= NEW_STATUS_RPC_VERSION) {
         switch (status) {
