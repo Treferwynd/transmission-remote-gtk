@@ -67,6 +67,11 @@ struct _TrgStateSelectorPrivate {
     GtkTreeRowReference *active_rr;
     GtkTreeRowReference *seed_wait_rr;
     GtkTreeRowReference *down_wait_rr;
+
+	/***************************************/
+	/***************** WIP *****************/
+	/***************************************/
+    GtkTreeRowReference *derping_rr;
 };
 
 GRegex *trg_state_selector_get_url_host_regex(TrgStateSelector * s)
@@ -555,6 +560,11 @@ trg_state_selector_stats_update(TrgStateSelector * s,
     trg_state_selector_update_stat(priv->checking_rr, stats->checking);
     trg_state_selector_update_stat(priv->down_wait_rr, stats->down_wait);
     trg_state_selector_update_stat(priv->seed_wait_rr, stats->seed_wait);
+
+	/***************************************/
+	/***************** WIP *****************/
+	/***************************************/
+    trg_state_selector_update_stat(priv->derping_rr, stats->derping);
 }
 
 void trg_state_selector_disconnect(TrgStateSelector * s)
@@ -579,6 +589,11 @@ void trg_state_selector_disconnect(TrgStateSelector * s)
     trg_state_selector_update_stat(priv->incomplete_rr, -1);
     trg_state_selector_update_stat(priv->active_rr, -1);
     trg_state_selector_update_stat(priv->checking_rr, -1);
+
+	/***************************************/
+	/***************** WIP *****************/
+	/***************************************/
+    trg_state_selector_update_stat(priv->derping_rr, -1);
 }
 
 static void trg_state_selector_init(TrgStateSelector * self)
@@ -651,6 +666,13 @@ static GObject *trg_state_selector_constructor(GType type,
                                              G_TYPE_INT, G_TYPE_UINT,
                                              G_TYPE_INT64, G_TYPE_UINT);
     gtk_tree_view_set_model(GTK_TREE_VIEW(object), GTK_TREE_MODEL(store));
+
+	/***************************************/
+	/***************** WIP *****************/
+	/***************************************/
+    trg_state_selector_add_state(selector, &iter, -1, GTK_STOCK_HOME,
+                                 "Derping", TORRENT_FLAG_DERPING,
+                                 &priv->derping_rr);
 
     trg_state_selector_add_state(selector, &iter, -1, GTK_STOCK_ABOUT,
                                  _("All"), 0, &priv->all_rr);

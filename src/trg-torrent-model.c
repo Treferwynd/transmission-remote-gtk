@@ -356,6 +356,12 @@ trg_torrent_model_stats_scan_foreachfunc(GtkTreeModel *
     if (flags & TORRENT_FLAG_DOWNLOADING_WAIT)
         stats->down_wait++;
 
+	/***************************************/
+	/***************** WIP *****************/
+	/***************************************/
+    if (flags & TORRENT_FLAG_DERPING)
+        stats->derping++;
+
     stats->count++;
 
     return FALSE;

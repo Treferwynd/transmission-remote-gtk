@@ -66,6 +66,11 @@ typedef struct {
     gint active;
     gint seed_wait;
     gint down_wait;
+
+	/***************************************/
+	/***************** WIP *****************/
+	/***************************************/
+	gint derping;
 } trg_torrent_model_update_stats;
 
 #define TORRENT_UPDATE_STATE_CHANGE        (1 << 0)
