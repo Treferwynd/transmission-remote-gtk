@@ -702,21 +702,6 @@ static GObject *trg_state_selector_constructor(GType type,
     trg_state_selector_add_state(selector, &iter, -1, GTK_STOCK_NETWORK,
                                  _("Active"), TORRENT_FLAG_ACTIVE,
                                  &priv->active_rr);
-
-
-
-
-	/***************************************/
-	/***************** WIP *****************/
-	/***************************************/
-    trg_state_selector_add_state(selector, &iter, -1, GTK_STOCK_REFRESH,
-                                 "Derping", TORRENT_FLAG_DERPING,
-                                 &priv->checking_rr);
-
-
-
-
-
     trg_state_selector_add_state(selector, &iter, -1, GTK_STOCK_REFRESH,
                                  _("Checking"), TORRENT_FLAG_CHECKING_ANY,
                                  &priv->checking_rr);
