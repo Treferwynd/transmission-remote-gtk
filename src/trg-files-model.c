@@ -341,6 +341,16 @@ static gboolean trg_files_model_applytree_idlefunc(gpointer data)
 
     if (args->torrent_id == priv->torrentId) {
         store_add_node(GTK_TREE_STORE(args->model), NULL, args->top_node);
+
+		/***************************************/
+		/***************** WIP *****************/
+		/***************************************/
+		/* Expand only the root element of the TreeView in the Files tab */
+		GtkTreePath *path;
+		path = gtk_tree_path_new_from_indices(0, -1);
+		gtk_tree_view_expand_row(args->tree_view, path, FALSE);
+		gtk_tree_path_free(path);
+
         priv->n_items = args->n_items;
         priv->accept = TRUE;
     }
