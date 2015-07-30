@@ -150,6 +150,8 @@ static gboolean trg_torrent_tree_view_visible_func(GtkTreeModel * model,
 static TrgTorrentTreeView
     * trg_main_window_torrent_tree_view_new(TrgMainWindow * win,
                                             GtkTreeModel * model);
+static gboolean trg_couldnt_connect_error_handler(TrgMainWindow * win,
+                                         trg_response * response);
 static gboolean trg_dialog_error_handler(TrgMainWindow * win,
                                          trg_response * response);
 static gboolean torrent_selection_changed(GtkTreeSelection * selection,
@@ -1109,7 +1111,7 @@ static gboolean on_session_get(gpointer data)
 		/***************** WIP *****************/
 		/***************************************/
 		// DO NOT show that damned dialog "Couldn't connect to ur mom"
-		if (response->status != CURLE_OK) {
+		if (trg_couldnt_connect_error_handler(win, response)) {
             trg_response_free(response);
             reset_connect_args(win);
             return FALSE;
@@ -1524,6 +1526,25 @@ static TrgTorrentTreeView
                      G_CALLBACK(torrent_selection_changed), win);
 
     return torrentTreeView;
+}
+
+static gboolean
+trg_couldnt_connect_error_handler(TrgMainWindow * win, trg_response * response)
+{
+	// Show "Could't connect to server" on the bottom stuff
+    TrgMainWindowPrivate *priv = win->priv;
+
+    if (response->status != CURLE_OK) {
+        const gchar *msg;
+
+        msg = make_error_message(response->obj, response->status);
+        trg_status_bar_clear_indicators(priv->statusBar);
+        trg_status_bar_push_connection_msg(priv->statusBar, msg);
+        g_free((gpointer) msg);
+        return TRUE;
+    } else {
+        return FALSE;
+    }
 }
 
 static gboolean
