@@ -627,7 +627,7 @@ void connect_cb(GtkWidget * w, gpointer data)
     }
 
     trg_status_bar_push_connection_msg(priv->statusBar,
-                                       _("Connecting..."));
+                                       _("Trying to connect..."));
     trg_client_inc_connid(priv->client);
     dispatch_async(priv->client, session_get(), on_session_get, data);
 }
@@ -1286,7 +1286,7 @@ static gboolean on_torrent_get(gpointer data, int mode)
 
         if (trg_client_inc_failcount(client) >= max_retries) {
             trg_main_window_conn_changed(win, FALSE);
-            trg_dialog_error_handler(win, response);
+            trg_couldnt_connect_error_handler(win, response);
         } else {
             gchar *msg =
                 make_error_message(response->obj, response->status);
@@ -1528,10 +1528,14 @@ static TrgTorrentTreeView
     return torrentTreeView;
 }
 
+/***************************************/
+/***************** WIP *****************/
+/***************************************/
 static gboolean
 trg_couldnt_connect_error_handler(TrgMainWindow * win, trg_response * response)
 {
-	// Show "Could't connect to server" on the bottom stuff
+	// Automatically try to reconnect.
+	// Show "Couldn't connect to server" on the bottom stuff
     TrgMainWindowPrivate *priv = win->priv;
 
     if (response->status != CURLE_OK) {
@@ -1541,6 +1545,12 @@ trg_couldnt_connect_error_handler(TrgMainWindow * win, trg_response * response)
         trg_status_bar_clear_indicators(priv->statusBar);
         trg_status_bar_push_connection_msg(priv->statusBar, msg);
         g_free((gpointer) msg);
+
+		// Reconnect
+		// As long as I can tell there's a circular trg_session_update_timerfunc and
+		// on_session_get_timer, which calls on_session_get and then on_torrent_get which increase the counter
+		// So fuck them in the fuck-hole
+		auto_connect_if_required(win);
         return TRUE;
     } else {
         return FALSE;
