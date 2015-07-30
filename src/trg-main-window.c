@@ -1105,7 +1105,11 @@ static gboolean on_session_get(gpointer data)
     if (!isConnected) {
         gdouble version;
 
-        if (trg_dialog_error_handler(win, response)) {
+		/***************************************/
+		/***************** WIP *****************/
+		/***************************************/
+		// DO NOT show that damned dialog "Couldn't connect to ur mom"
+		if (response->status != CURLE_OK) {
             trg_response_free(response);
             reset_connect_args(win);
             return FALSE;
