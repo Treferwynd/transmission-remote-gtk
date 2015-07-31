@@ -608,6 +608,12 @@ TrgStateSelector *trg_state_selector_new(TrgClient * client,
                      client, NULL);
     g_signal_connect(tmodel, "torrents-state-change",
                      G_CALLBACK(on_torrents_state_change), selector);
+	/***************************************/
+	/***************** WIP *****************/
+	/***************************************/
+	// Show Derping instead of All torrents on startup
+    TrgStateSelectorPrivate *priv = TRG_STATE_SELECTOR_GET_PRIVATE(selector);
+    priv->flag = TORRENT_FLAG_DERPING;
     return selector;
 }
 
