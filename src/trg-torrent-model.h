@@ -71,6 +71,7 @@ typedef struct {
 	/***************** WIP *****************/
 	/***************************************/
 	gint derping;
+	gint plebs;
 } trg_torrent_model_update_stats;
 
 #define TORRENT_UPDATE_STATE_CHANGE        (1 << 0)

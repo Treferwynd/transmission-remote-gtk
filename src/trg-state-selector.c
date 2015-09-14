@@ -72,6 +72,7 @@ struct _TrgStateSelectorPrivate {
 	/***************** WIP *****************/
 	/***************************************/
     GtkTreeRowReference *derping_rr;
+    GtkTreeRowReference *plebs_rr;
 };
 
 GRegex *trg_state_selector_get_url_host_regex(TrgStateSelector * s)
@@ -565,6 +566,7 @@ trg_state_selector_stats_update(TrgStateSelector * s,
 	/***************** WIP *****************/
 	/***************************************/
     trg_state_selector_update_stat(priv->derping_rr, stats->derping);
+    trg_state_selector_update_stat(priv->plebs_rr, stats->plebs);
 }
 
 void trg_state_selector_disconnect(TrgStateSelector * s)
@@ -594,6 +596,7 @@ void trg_state_selector_disconnect(TrgStateSelector * s)
 	/***************** WIP *****************/
 	/***************************************/
     trg_state_selector_update_stat(priv->derping_rr, -1);
+    trg_state_selector_update_stat(priv->plebs_rr, -1);
 }
 
 static void trg_state_selector_init(TrgStateSelector * self)
@@ -679,6 +682,10 @@ static GObject *trg_state_selector_constructor(GType type,
     trg_state_selector_add_state(selector, &iter, -1, GTK_STOCK_HOME,
                                  "Derping", TORRENT_FLAG_DERPING,
                                  &priv->derping_rr);
+
+    trg_state_selector_add_state(selector, &iter, -1, GTK_STOCK_HOME,
+                                 "Plebs", TORRENT_FLAG_PLEBS,
+                                 &priv->plebs_rr);
 
     trg_state_selector_add_state(selector, &iter, -1, GTK_STOCK_ABOUT,
                                  _("All"), 0, &priv->all_rr);

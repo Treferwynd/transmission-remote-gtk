@@ -362,6 +362,9 @@ trg_torrent_model_stats_scan_foreachfunc(GtkTreeModel *
     if (flags & TORRENT_FLAG_DERPING)
         stats->derping++;
 
+    if (flags & TORRENT_FLAG_PLEBS)
+        stats->plebs++;
+
     stats->count++;
 
     return FALSE;
@@ -744,7 +747,7 @@ trg_torrent_model_stat_counts_clear(trg_torrent_model_update_stats * stats)
     stats->count = stats->down = stats->error = stats->paused =
         stats->seeding = stats->complete = stats->incomplete =
         stats->active = stats->checking = stats->seed_wait =
-        stats->down_wait = stats->derping = 0;
+        stats->down_wait = stats->derping = stats->plebs = 0;
 }
 
 trg_torrent_model_update_stats *trg_torrent_model_update(TrgTorrentModel *

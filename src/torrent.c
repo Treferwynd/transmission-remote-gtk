@@ -244,6 +244,18 @@ gboolean torrent_is_recent(JsonObject * t)
 	return ret;
 }
 
+// Return true if upload ratio is less than 1
+gboolean torrent_is_plebs(JsonObject * t)
+{
+	gdouble ratio = json_node_really_get_double(json_object_get_member (t, FIELD_UPLOAD_RATIO));
+	printf("real %G\n", ratio);
+	// TODO2: for some reason this "<" is not exact :/
+	// 0.99 is a good enough workaround
+	if (ratio < 0.99)
+		return TRUE;
+	return FALSE;
+}
+
 guint32
 torrent_get_flags(JsonObject * t, gint64 rpcv, gint64 status,
                   gint64 fileCount, gint64 downRate, gint64 upRate)
@@ -251,7 +263,14 @@ torrent_get_flags(JsonObject * t, gint64 rpcv, gint64 status,
     guint32 flags = 0;
 
     if (fileCount > 0 && torrent_get_is_finished(t) == TRUE)
+	{
         flags |= TORRENT_FLAG_COMPLETE;
+		/***************************************/
+		/***************** WIP *****************/
+		/***************************************/
+		if (torrent_is_plebs(t))
+			flags |= TORRENT_FLAG_PLEBS;
+	}
     else
 	{
         flags |= TORRENT_FLAG_INCOMPLETE;
@@ -261,7 +280,6 @@ torrent_get_flags(JsonObject * t, gint64 rpcv, gint64 status,
 	/***************************************/
 	/***************** WIP *****************/
 	/***************************************/
-	/* TODO STUFF HERE! PUT SHIT IN DA IF! */
 	if (torrent_is_recent(t))
 		flags |= TORRENT_FLAG_DERPING;
 

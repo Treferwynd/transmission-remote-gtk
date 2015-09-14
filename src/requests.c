@@ -212,6 +212,11 @@ JsonNode *torrent_get(gint64 id)
     json_array_add_string_element(fields, FIELD_WANTED);
     json_array_add_string_element(fields, FIELD_PRIORITIES);
     json_array_add_string_element(fields, FIELD_RECHECK_PROGRESS);
+	/***************************************/
+	/***************** WIP *****************/
+	/***************************************/
+    json_array_add_string_element(fields, FIELD_UPLOAD_RATIO);
+
     json_object_set_array_member(args, PARAM_FIELDS, fields);
     return root;
 }
