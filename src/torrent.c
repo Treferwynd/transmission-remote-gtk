@@ -248,7 +248,6 @@ gboolean torrent_is_recent(JsonObject * t)
 gboolean torrent_is_plebs(JsonObject * t)
 {
 	gdouble ratio = json_node_really_get_double(json_object_get_member (t, FIELD_UPLOAD_RATIO));
-	printf("real %G\n", ratio);
 	// TODO2: for some reason this "<" is not exact :/
 	// 0.99 is a good enough workaround
 	if (ratio < 0.99)
