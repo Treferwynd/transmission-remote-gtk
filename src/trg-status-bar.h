@@ -65,4 +65,12 @@ const gchar *trg_status_bar_get_speed_text(TrgStatusBar * s);
 void trg_status_bar_update_speed(TrgStatusBar * sb,
                                  trg_torrent_model_update_stats * stats,
                                  TrgClient * client);
+
+/***************************************/
+/***************** WIP *****************/
+/***************************************/
+void trg_status_bar_update_info(TrgStatusBar * sb,
+                           TrgTorrentModel * model,
+                           JsonObject * response);
+
 #endif                          /* TRG_STATUS_BAR_H_ */

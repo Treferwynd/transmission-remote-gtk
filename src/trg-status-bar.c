@@ -21,8 +21,9 @@
 #include <glib/gprintf.h>
 #include <gtk/gtk.h>
 
-#include "trg-prefs.h"
+#include "torrent.h"
 #include "trg-main-window.h"
+#include "trg-prefs.h"
 #include "trg-status-bar.h"
 #include "trg-torrent-model.h"
 #include "session-get.h"
@@ -48,11 +49,22 @@ typedef struct _TrgStatusBarPrivate TrgStatusBarPrivate;
 
 struct _TrgStatusBarPrivate {
     GtkWidget *speed_lbl;
+    GtkWidget *down_lbl;
     GtkWidget *turtleImage, *turtleEventBox;
     GtkWidget *free_lbl;
     GtkWidget *info_lbl;
     TrgClient *client;
     TrgMainWindow *win;
+};
+
+#define TRG_TORRENT_MODEL_GET_PRIVATE(o) \
+  (G_TYPE_INSTANCE_GET_PRIVATE ((o), TRG_TYPE_TORRENT_MODEL, TrgTorrentModelPrivate))
+typedef struct _TrgTorrentModelPrivate TrgTorrentModelPrivate;
+
+struct _TrgTorrentModelPrivate {
+    GHashTable *ht;
+    GRegex *urlHostRegex;
+    trg_torrent_model_update_stats stats;
 };
 
 static void trg_status_bar_class_init(TrgStatusBarClass * klass)
@@ -65,6 +77,7 @@ void trg_status_bar_clear_indicators(TrgStatusBar * sb)
     TrgStatusBarPrivate *priv = TRG_STATUS_BAR_GET_PRIVATE(sb);
     gtk_label_set_text(GTK_LABEL(priv->free_lbl), "");
     gtk_label_set_text(GTK_LABEL(priv->speed_lbl), "");
+    gtk_label_set_text(GTK_LABEL(priv->down_lbl), "");
 }
 
 void trg_status_bar_reset(TrgStatusBar * sb)
@@ -116,6 +129,9 @@ static void trg_status_bar_init(TrgStatusBar * self)
 
     priv->speed_lbl = gtk_label_new(NULL);
     gtk_box_pack_end(GTK_BOX(self), priv->speed_lbl, FALSE, TRUE, 10);
+
+    priv->down_lbl = gtk_label_new(NULL);
+    gtk_box_pack_end(GTK_BOX(self), priv->down_lbl, FALSE, TRUE, 10);
 
     priv->free_lbl = gtk_label_new(NULL);
     gtk_box_pack_end(GTK_BOX(self), priv->free_lbl, FALSE, TRUE, 30);
@@ -184,6 +200,50 @@ void trg_status_bar_session_update(TrgStatusBar * sb, JsonObject * session)
                                 _("Disable alternate speed limits") :
                                 _("Enable alternate speed limits"));
     gtk_widget_set_visible(priv->turtleEventBox, TRUE);
+}
+
+/***************************************/
+/***************** WIP *****************/
+/***************************************/
+/*
+ * Update the status bar with info on remaining download/upload time and space
+ */
+void
+trg_status_bar_update_info(TrgStatusBar * sb,
+                           TrgTorrentModel * model,
+                           JsonObject * response)
+{
+	TrgStatusBarPrivate *priv = TRG_STATUS_BAR_GET_PRIVATE(sb);
+	gchar downsize[64], downtime[64];
+	gchar *downText;
+
+	TrgTorrentModelPrivate *tor_priv = TRG_TORRENT_MODEL_GET_PRIVATE(model);
+	GList *torrentList;
+	JsonObject *args, *t;
+	GList *li;
+	gint64 id;
+	JsonArray *removedTorrents;
+	GtkTreeIter iter;
+	GtkTreePath *path;
+	GtkTreeRowReference *rr;
+	gpointer *result;
+	guint whatsChanged = 0;
+
+	args = get_arguments(response);
+	torrentList = json_array_get_elements(get_torrents(args));
+
+	tor_priv->stats.downRateTotal = 0;
+	tor_priv->stats.upRateTotal = 0;
+
+	for (li = torrentList; li; li = g_list_next(li)) {
+		t = json_node_get_object((JsonNode *) li->data);
+		id = torrent_get_id(t);
+		printf("Id: %d %s\n", id, torrent_get_name(t));
+	}
+
+	g_snprintf(downsize, sizeof(downsize), _(" (mannaggia la maronna)"));
+	downText = g_strdup_printf(_("Dorp: %s"), downsize);
+	gtk_label_set_text(GTK_LABEL(priv->down_lbl), downsize);
 }
 
 void
