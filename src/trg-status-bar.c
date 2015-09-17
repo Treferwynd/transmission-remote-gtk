@@ -49,7 +49,10 @@ typedef struct _TrgStatusBarPrivate TrgStatusBarPrivate;
 
 struct _TrgStatusBarPrivate {
     GtkWidget *speed_lbl;
-    GtkWidget *down_lbl;
+	GtkWidget *down_lbl;
+    GtkWidget *downleft_lbl;
+    GtkWidget *up_lbl;
+    GtkWidget *upleft_lbl;
     GtkWidget *turtleImage, *turtleEventBox;
     GtkWidget *free_lbl;
     GtkWidget *info_lbl;
@@ -78,6 +81,9 @@ void trg_status_bar_clear_indicators(TrgStatusBar * sb)
     gtk_label_set_text(GTK_LABEL(priv->free_lbl), "");
     gtk_label_set_text(GTK_LABEL(priv->speed_lbl), "");
     gtk_label_set_text(GTK_LABEL(priv->down_lbl), "");
+    gtk_label_set_text(GTK_LABEL(priv->downleft_lbl), "");
+    gtk_label_set_text(GTK_LABEL(priv->up_lbl), "");
+	gtk_label_set_text(GTK_LABEL(priv->upleft_lbl), "");
 }
 
 void trg_status_bar_reset(TrgStatusBar * sb)
@@ -130,8 +136,18 @@ static void trg_status_bar_init(TrgStatusBar * self)
     priv->speed_lbl = gtk_label_new(NULL);
     gtk_box_pack_end(GTK_BOX(self), priv->speed_lbl, FALSE, TRUE, 10);
 
-    priv->down_lbl = gtk_label_new(NULL);
-    gtk_box_pack_end(GTK_BOX(self), priv->down_lbl, FALSE, TRUE, 10);
+	priv->downleft_lbl = gtk_label_new(NULL);
+	gtk_box_pack_end(GTK_BOX(self), priv->downleft_lbl, FALSE, TRUE, 10);
+
+	priv->upleft_lbl = gtk_label_new(NULL);
+	gtk_box_pack_end(GTK_BOX(self), priv->upleft_lbl, FALSE, TRUE, 10);
+
+	priv->down_lbl = gtk_label_new(NULL);
+	gtk_box_pack_end(GTK_BOX(self), priv->down_lbl, FALSE, TRUE, 10);
+
+	priv->up_lbl = gtk_label_new(NULL);
+	gtk_box_pack_end(GTK_BOX(self), priv->up_lbl, FALSE, TRUE, 10);
+
 
     priv->free_lbl = gtk_label_new(NULL);
     gtk_box_pack_end(GTK_BOX(self), priv->free_lbl, FALSE, TRUE, 30);
@@ -154,9 +170,7 @@ trg_status_bar_set_connected_label(TrgStatusBar * sb, JsonObject * session,
                                               TRG_PREFS_KEY_PROFILE_NAME,
                                               TRG_PREFS_CONNECTION);
     gchar *statusMsg =
-        g_strdup_printf(_("Connected: %s :: Transmission %s"),
-                        profileName,
-                        session_get_version_string(session));
+        g_strdup_printf(_("Connected: %s"), profileName);
 
     trg_status_bar_push_connection_msg(sb, statusMsg);
 
@@ -206,7 +220,11 @@ void trg_status_bar_session_update(TrgStatusBar * sb, JsonObject * session)
 /***************** WIP *****************/
 /***************************************/
 /*
- * Update the status bar with info on remaining download/upload time and space
+ * Update the status bar with info on:
+ *     Uploaded: the size of everything we ever uploaded
+ *     Downloaded: the size of everything we ever downloaded
+ *     To download: the size and ETA of everything we still have to download
+ *     To upload: the size and ETA of everything we still have to upload
  */
 void
 trg_status_bar_update_info(TrgStatusBar * sb,
@@ -214,36 +232,126 @@ trg_status_bar_update_info(TrgStatusBar * sb,
                            JsonObject * response)
 {
 	TrgStatusBarPrivate *priv = TRG_STATUS_BAR_GET_PRIVATE(sb);
-	gchar downsize[64], downtime[64];
-	gchar *downText;
+
+	gchar downloadedChars[64];
+	gint64 downloaded = 0;
+
+	gchar uploadedChars[64];
+	gint64 uploaded = 0;
+
+	gchar downloadLeftChars[64];
+	gint64 downloadLeft = 0;
+
+	gchar uploadLeftChars[64];
+	gint64 uploadLeft = 0;
+
+	gchar buf[32];
+	gint sizeOfBuf;
+	sizeOfBuf = sizeof(buf);
+
+	gint64 etaDown = 0;
+	gboolean is_downloading = FALSE;
+	gchar *etaDownString;
+
+	gint64 etaUp = 0;
+	gboolean is_uploading = FALSE;
+	gchar *etaUpString;
+
 
 	TrgTorrentModelPrivate *tor_priv = TRG_TORRENT_MODEL_GET_PRIVATE(model);
 	GList *torrentList;
 	JsonObject *args, *t;
 	GList *li;
-	gint64 id;
-	JsonArray *removedTorrents;
-	GtkTreeIter iter;
-	GtkTreePath *path;
-	GtkTreeRowReference *rr;
-	gpointer *result;
-	guint whatsChanged = 0;
 
 	args = get_arguments(response);
 	torrentList = json_array_get_elements(get_torrents(args));
 
-	tor_priv->stats.downRateTotal = 0;
-	tor_priv->stats.upRateTotal = 0;
-
 	for (li = torrentList; li; li = g_list_next(li)) {
 		t = json_node_get_object((JsonNode *) li->data);
-		id = torrent_get_id(t);
-		printf("Id: %d %s\n", id, torrent_get_name(t));
+
+		downloaded += torrent_get_downloaded(t);
+		uploaded += torrent_get_uploaded(t);
+
+		downloadLeft += torrent_get_left_until_done(t);
+		uploadLeft += torrent_get_size_when_done(t) - torrent_get_uploaded(t);
+
+		gint tmp_eta = torrent_get_eta(t);
+		gint tmp_status = torrent_get_status(t);
+		// Downloading
+		if(tmp_status == 4)
+		{
+			is_downloading = TRUE;
+			if(tmp_eta > etaDown)
+				etaDown = tmp_eta;
+		}
+		// Seeding
+		if(tmp_status == 6)
+		{
+			is_uploading = TRUE;
+			if(tmp_eta > etaUp)
+				etaUp = tmp_eta;
+		}
 	}
 
-	g_snprintf(downsize, sizeof(downsize), _(" (mannaggia la maronna)"));
-	downText = g_strdup_printf(_("Dorp: %s"), downsize);
-	gtk_label_set_text(GTK_LABEL(priv->down_lbl), downsize);
+	if(etaDown > 0)
+	{
+		tr_strltime_long(buf, etaDown, sizeOfBuf);
+		etaDownString = buf;
+	}
+	else if(is_downloading)
+	{
+		etaDownString = "∞";
+	}
+	else
+	{
+		etaDownString = "0";
+	}
+
+	if(etaUp > 0)
+	{
+		tr_strltime_long(buf, etaUp, sizeOfBuf);
+		etaUpString = buf;
+	}
+	else if(is_uploading)
+	{
+		etaUpString = "∞";
+	}
+	else
+	{
+		etaUpString = "0";
+	}
+
+	if (downloadLeft < 0)
+		downloadLeft = 0;
+	gchar *downloadLeftString;
+	trg_strlsize(downloadLeftChars, downloadLeft);
+	downloadLeftString = g_strdup_printf(_("To Download: %s ETA: %s"), downloadLeftChars, etaDownString);
+	gtk_label_set_text(GTK_LABEL(priv->downleft_lbl), downloadLeftString);
+	g_free(downloadLeftString);
+
+	if (uploadLeft < 0)
+		uploadLeft = 0;
+	gchar *uploadLeftString;
+	trg_strlsize(uploadLeftChars, uploadLeft);
+	uploadLeftString = g_strdup_printf(_("To Upload: %s ETA: %s"), uploadLeftChars, etaUpString);
+	gtk_label_set_text(GTK_LABEL(priv->upleft_lbl), uploadLeftString);
+	g_free(uploadLeftString);
+
+	if (downloaded < 0)
+		downloaded = 0;
+	gchar *downloadedString;
+	trg_strlsize(downloadedChars, downloaded);
+	downloadedString = g_strdup_printf(_("Downloaded: %s"), downloadedChars);
+	gtk_label_set_text(GTK_LABEL(priv->down_lbl), downloadedString);
+	g_free(downloadedString);
+
+	if (uploaded < 0)
+		uploaded = 0;
+	gchar *uploadedString;
+	trg_strlsize(uploadedChars, uploaded);
+	uploadedString = g_strdup_printf(_("Uploaded: %s"), uploadedChars);
+	gtk_label_set_text(GTK_LABEL(priv->up_lbl), uploadedString);
+	g_free(uploadedString);
 }
 
 void
