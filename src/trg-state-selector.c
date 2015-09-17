@@ -614,9 +614,10 @@ TrgStateSelector *trg_state_selector_new(TrgClient * client,
 	/***************************************/
 	/***************** WIP *****************/
 	/***************************************/
-	// Show Derping instead of All torrents on startup
-    TrgStateSelectorPrivate *priv = TRG_STATE_SELECTOR_GET_PRIVATE(selector);
-    priv->flag = TORRENT_FLAG_DERPING;
+	// Show Derping instead of All torrents on startup (honor chronology otherwise)
+	TrgStateSelectorPrivate *priv = TRG_STATE_SELECTOR_GET_PRIVATE(selector);
+	if(priv->flag == 0)
+		priv->flag = TORRENT_FLAG_DERPING;
     return selector;
 }
 

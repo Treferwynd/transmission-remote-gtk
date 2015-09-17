@@ -47,8 +47,8 @@
 /***************************************/
 /***************** WIP *****************/
 /***************************************/
-#define TORRENT_FLAG_DERPING            (1 << 16)
-#define TORRENT_FLAG_PLEBS            (1 << 17)
+#define TORRENT_FLAG_DERPING           (1 << 16)
+#define TORRENT_FLAG_PLEBS             (1 << 17)
 
 gint64 torrent_get_total_size(JsonObject * t);
 gint64 torrent_get_size_when_done(JsonObject * t);
