@@ -295,8 +295,8 @@ trg_status_bar_update_info(TrgStatusBar * sb,
 
 	if(etaDown > 0)
 	{
-		tr_strltime_long(buf, etaDown, sizeOfBuf);
-		etaDownString = buf;
+		tr_strltime_short(buf, etaDown, sizeOfBuf);
+		etaDownString = g_strdup_printf(buf);
 	}
 	else if(is_downloading)
 	{
@@ -310,7 +310,7 @@ trg_status_bar_update_info(TrgStatusBar * sb,
 	if(etaUp > 0)
 	{
 		tr_strltime_long(buf, etaUp, sizeOfBuf);
-		etaUpString = buf;
+		etaUpString = g_strdup_printf(buf);
 	}
 	else if(is_uploading)
 	{
