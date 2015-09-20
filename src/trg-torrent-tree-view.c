@@ -62,12 +62,12 @@ static void trg_torrent_tree_view_init(TrgTorrentTreeView * tttv)
     trg_tree_view_reg_column(ttv, TRG_COLTYPE_TEXT, TORRENT_COLUMN_STATUS,
                              _("Status"), "status", 0);
     trg_tree_view_reg_column(ttv, TRG_COLTYPE_NUMGTZERO,
-                             TORRENT_COLUMN_SEEDS, _("Seeds"), "seeds", 0);
+                             TORRENT_COLUMN_SEEDS, _("S"), "seeds", 0);
     trg_tree_view_reg_column(ttv, TRG_COLTYPE_NUMGTZERO,
                              TORRENT_COLUMN_PEERS_TO_US, _("Sending"),
                              "sending", TRG_COLUMN_EXTRA);
     trg_tree_view_reg_column(ttv, TRG_COLTYPE_NUMGTZERO,
-                             TORRENT_COLUMN_LEECHERS, _("Leechers"),
+                             TORRENT_COLUMN_LEECHERS, _("L"),
                              "leechers", 0);
     trg_tree_view_reg_column(ttv, TRG_COLTYPE_NUMGTZERO,
                              TORRENT_COLUMN_DOWNLOADS, _("Downloads"),
@@ -114,10 +114,10 @@ static void trg_torrent_tree_view_init(TrgTorrentTreeView * tttv)
                              TRG_COLUMN_EXTRA |
                              TRG_COLUMN_HIDE_FROM_TOP_MENU);
     trg_tree_view_reg_column(ttv, TRG_COLTYPE_SPEED,
-                             TORRENT_COLUMN_DOWNSPEED, _("Down Speed"),
+                             TORRENT_COLUMN_DOWNSPEED, _("Down"),
                              "down-speed", 0);
     trg_tree_view_reg_column(ttv, TRG_COLTYPE_SPEED,
-                             TORRENT_COLUMN_UPSPEED, _("Up Speed"),
+                             TORRENT_COLUMN_UPSPEED, _("Up"),
                              "up-speed", 0);
     trg_tree_view_reg_column(ttv, TRG_COLTYPE_ETA, TORRENT_COLUMN_ETA,
                              _("ETA"), "eta", 0);
