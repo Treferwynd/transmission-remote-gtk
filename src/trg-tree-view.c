@@ -574,6 +574,12 @@ trg_tree_view_add_column_after(TrgTreeView * tv,
 									GTK_TREE_VIEW_COLUMN_FIXED);
 		gtk_tree_view_column_set_fixed_width(column, width);
 	}
+	if(g_strcmp0(desc->id, "name"))
+	{
+		gtk_tree_view_column_set_sizing(column,
+									GTK_TREE_VIEW_COLUMN_AUTOSIZE);
+	}
+
 
     g_object_set_data(G_OBJECT(column), GDATA_KEY_COLUMN_DESC, desc);
 
