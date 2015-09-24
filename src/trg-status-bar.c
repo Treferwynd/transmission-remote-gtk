@@ -170,7 +170,7 @@ trg_status_bar_set_connected_label(TrgStatusBar * sb, JsonObject * session,
                                               TRG_PREFS_KEY_PROFILE_NAME,
                                               TRG_PREFS_CONNECTION);
     gchar *statusMsg =
-        g_strdup_printf(_("Connected: %s"), profileName);
+        g_strdup_printf(_("%s"), profileName);
 
     trg_status_bar_push_connection_msg(sb, statusMsg);
 

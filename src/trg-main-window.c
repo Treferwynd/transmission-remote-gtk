@@ -510,10 +510,10 @@ gint trg_add_from_filename(TrgMainWindow * win, gchar ** uris)
 
     if (uris) {
         for (i = 0; uris[i]; i++) {
-        	if (is_minimised_arg(uris[i]))
-        		g_free(uris[i]);
-        	else if (uris[i])
-                filesList = g_slist_append(filesList, uris[i]);
+			if (is_minimised_arg(uris[i]))
+				g_free(uris[i]);
+			else if (uris[i])
+				filesList = g_slist_append(filesList, uris[i]);
         }
     }
 
@@ -613,21 +613,29 @@ void connect_cb(GtkWidget * w, gpointer data)
 
 	dialog = gtk_message_dialog_new(GTK_WINDOW(data),
 					GTK_DIALOG_DESTROY_WITH_PARENT,
-					(populate_result == TRG_NO_HOSTNAME_SET) ? GTK_MESSAGE_INFO : GTK_MESSAGE_ERROR, 
+					(populate_result == TRG_NO_HOSTNAME_SET) ? GTK_MESSAGE_INFO : GTK_MESSAGE_ERROR,
 					GTK_BUTTONS_OK,
 					"%s", msg);
 	gtk_dialog_run(GTK_DIALOG(dialog));
 	gtk_widget_destroy(dialog);
-        reset_connect_args(TRG_MAIN_WINDOW(data));
+		reset_connect_args(TRG_MAIN_WINDOW(data));
 
 	if (populate_result == TRG_NO_HOSTNAME_SET)
-	  open_local_prefs_cb (NULL, win);
+		open_local_prefs_cb (NULL, win);
 
         return;
     }
 
-    trg_status_bar_push_connection_msg(priv->statusBar,
-                                       _("Trying to connect..."));
+	gchar *profileName = trg_prefs_get_string(prefs,
+												TRG_PREFS_KEY_PROFILE_NAME,
+												TRG_PREFS_CONNECTION);
+	gchar *statusMsg = g_strdup_printf(_("Trying to connect to %s..."), profileName);
+
+	trg_status_bar_push_connection_msg(priv->statusBar, statusMsg);
+
+	g_free(profileName);
+    g_free(statusMsg);
+
     trg_client_inc_connid(priv->client);
     dispatch_async(priv->client, session_get(), on_session_get, data);
 }
@@ -1341,8 +1349,8 @@ static gboolean on_torrent_get(gpointer data, int mode)
 	/***************** WIP *****************/
 	/***************************************/
 	trg_status_bar_update_info(priv->statusBar,
-							   priv->torrentModel,
-							   response->obj);
+								priv->torrentModel,
+								response->obj);
 
 #if TRG_WITH_GRAPH
     if (priv->graphNotebookIndex >= 0)
