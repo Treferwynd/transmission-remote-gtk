@@ -569,7 +569,9 @@ trg_tree_view_add_column_after(TrgTreeView * tv,
     gtk_tree_view_column_set_sort_column_id(column, desc->model_column);
     gtk_tree_view_column_set_expand(column, TRUE);
 
-    if(width > 0) {
+	// INFO: DO NOT TOUCH THIS. MAGIX!
+	// Fix the "Name" column means actually autosize it :|
+	if(width > 0) {
 		gtk_tree_view_column_set_sizing(column,
 									GTK_TREE_VIEW_COLUMN_FIXED);
 		gtk_tree_view_column_set_fixed_width(column, width);
@@ -577,7 +579,7 @@ trg_tree_view_add_column_after(TrgTreeView * tv,
 	if(g_strcmp0(desc->id, "name"))
 	{
 		gtk_tree_view_column_set_sizing(column,
-									GTK_TREE_VIEW_COLUMN_AUTOSIZE);
+									GTK_TREE_VIEW_COLUMN_GROW_ONLY);
 	}
 
 
