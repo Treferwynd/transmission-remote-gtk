@@ -150,8 +150,6 @@ static gboolean trg_torrent_tree_view_visible_func(GtkTreeModel * model,
 static TrgTorrentTreeView
     * trg_main_window_torrent_tree_view_new(TrgMainWindow * win,
                                             GtkTreeModel * model);
-static gboolean trg_couldnt_connect_error_handler(TrgMainWindow * win,
-                                         trg_response * response);
 static gboolean trg_dialog_error_handler(TrgMainWindow * win,
                                          trg_response * response);
 static gboolean torrent_selection_changed(GtkTreeSelection * selection,
@@ -1098,6 +1096,17 @@ static gboolean on_session_get_timer(gpointer data)
     return FALSE;
 }
 
+static gboolean reconnect(gpointer data)
+{
+	// Use with g_timeout_add_seconds to reconnect after # seconds
+	TrgMainWindow *win = TRG_MAIN_WINDOW(data);
+	TrgMainWindowPrivate *priv = win->priv;
+
+	dispatch_async(priv->client, session_get(), on_session_get, data);
+
+	return FALSE;
+}
+
 static gboolean on_session_get(gpointer data)
 {
     trg_response *response = (trg_response *) data;
@@ -1115,11 +1124,10 @@ static gboolean on_session_get(gpointer data)
     if (!isConnected) {
         gdouble version;
 
-		/***************************************/
-		/***************** WIP *****************/
-		/***************************************/
-		// DO NOT show that damned dialog "Couldn't connect to ur mom"
-		if (trg_couldnt_connect_error_handler(win, response)) {
+		// Try to reconnect in 1 second
+		priv->sessionTimerId = g_timeout_add_seconds(1, reconnect, win);
+
+		if (response->status != CURLE_OK) {
             trg_response_free(response);
             reset_connect_args(win);
             return FALSE;
@@ -1287,33 +1295,13 @@ static gboolean on_torrent_get(gpointer data, int mode)
     if (interval < 1)
         interval = TRG_INTERVAL_DEFAULT;
 
+	// Try to reconnect
     if (response->status != CURLE_OK) {
-        gint64 max_retries =
-            trg_prefs_get_int(prefs, TRG_PREFS_KEY_RETRIES,
-                              TRG_PREFS_CONNECTION);
+		connect_cb(NULL, win);
 
-        if (trg_client_inc_failcount(client) >= max_retries) {
-            trg_main_window_conn_changed(win, FALSE);
-            trg_couldnt_connect_error_handler(win, response);
-        } else {
-            gchar *msg =
-                make_error_message(response->obj, response->status);
-            gchar *statusBarMsg =
-                g_strdup_printf(_("Request %d/%d failed: %s"),
-                                trg_client_get_failcount(client),
-                                (gint) max_retries, msg);
-            trg_status_bar_push_connection_msg(priv->statusBar,
-                                               statusBarMsg);
-            g_free(msg);
-            g_free(statusBarMsg);
-            priv->timerId = g_timeout_add_seconds(interval,
-                                                  trg_update_torrents_timerfunc,
-                                                  win);
-        }
+		trg_response_free(response);
 
-        trg_response_free(response);
-
-        return FALSE;
+		return FALSE;
     }
 
     trg_client_reset_failcount(client);
@@ -1541,35 +1529,6 @@ static TrgTorrentTreeView
                      G_CALLBACK(torrent_selection_changed), win);
 
     return torrentTreeView;
-}
-
-/***************************************/
-/***************** WIP *****************/
-/***************************************/
-static gboolean
-trg_couldnt_connect_error_handler(TrgMainWindow * win, trg_response * response)
-{
-	// Automatically try to reconnect.
-	// Show "Couldn't connect to server" on the bottom stuff
-    TrgMainWindowPrivate *priv = win->priv;
-
-    if (response->status != CURLE_OK) {
-        const gchar *msg;
-
-        msg = make_error_message(response->obj, response->status);
-        trg_status_bar_clear_indicators(priv->statusBar);
-        trg_status_bar_push_connection_msg(priv->statusBar, msg);
-        g_free((gpointer) msg);
-
-		// Reconnect
-		// As long as I can tell there's a circular trg_session_update_timerfunc and
-		// on_session_get_timer, which calls on_session_get and then on_torrent_get which increase the counter
-		// So fuck them in the fuck-hole
-		auto_connect_if_required(win);
-        return TRUE;
-    } else {
-        return FALSE;
-    }
 }
 
 static gboolean
