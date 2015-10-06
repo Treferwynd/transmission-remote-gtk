@@ -1338,6 +1338,7 @@ static gboolean on_torrent_get(gpointer data, int mode)
 	/***************************************/
 	trg_status_bar_update_info(priv->statusBar,
 								priv->torrentModel,
+								stats,
 								response->obj);
 
 #if TRG_WITH_GRAPH

@@ -71,6 +71,7 @@ void trg_status_bar_update_speed(TrgStatusBar * sb,
 /***************************************/
 void trg_status_bar_update_info(TrgStatusBar * sb,
                            TrgTorrentModel * model,
+                           trg_torrent_model_update_stats * stats,
                            JsonObject * response);
 
 #endif                          /* TRG_STATUS_BAR_H_ */

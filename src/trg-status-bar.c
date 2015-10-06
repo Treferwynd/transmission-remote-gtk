@@ -229,6 +229,7 @@ void trg_status_bar_session_update(TrgStatusBar * sb, JsonObject * session)
 void
 trg_status_bar_update_info(TrgStatusBar * sb,
                            TrgTorrentModel * model,
+                           trg_torrent_model_update_stats * stats,
                            JsonObject * response)
 {
 	TrgStatusBarPrivate *priv = TRG_STATUS_BAR_GET_PRIVATE(sb);
@@ -281,8 +282,8 @@ trg_status_bar_update_info(TrgStatusBar * sb,
 		if(tmp_status == 4)
 		{
 			is_downloading = TRUE;
-			if(tmp_eta > etaDown)
-				etaDown = tmp_eta;
+			/* if(tmp_eta > etaDown) */
+			/* 	etaDown = tmp_eta; */
 		}
 		// Seeding
 		if(tmp_status == 6)
@@ -293,9 +294,10 @@ trg_status_bar_update_info(TrgStatusBar * sb,
 		}
 	}
 
-	if(etaDown > 0)
+	// Calculate Download ETA with total_size_left_to_download / current_total_download_speed
+	if(stats->downRateTotal > 0)
 	{
-		tr_strltime_short(buf, etaDown, sizeOfBuf);
+		tr_strltime_short(buf, downloadLeft / stats->downRateTotal, sizeOfBuf);
 		etaDownString = g_strdup_printf(buf);
 	}
 	else if(is_downloading)
@@ -304,12 +306,13 @@ trg_status_bar_update_info(TrgStatusBar * sb,
 	}
 	else
 	{
-		etaDownString = "0";
+		etaDownString = "Done";
 	}
 
-	if(etaUp > 0)
+	// Calculate Upload ETA with total_size_left_to_upload / current_total_upload_speed
+	if(stats->upRateTotal > 0)
 	{
-		tr_strltime_long(buf, etaUp, sizeOfBuf);
+		tr_strltime_long(buf, uploadLeft / stats->upRateTotal, sizeOfBuf);
 		etaUpString = g_strdup_printf(buf);
 	}
 	else if(is_uploading)
@@ -318,7 +321,7 @@ trg_status_bar_update_info(TrgStatusBar * sb,
 	}
 	else
 	{
-		etaUpString = "0";
+		etaUpString = "Done";
 	}
 
 	if (downloadLeft < 0)
