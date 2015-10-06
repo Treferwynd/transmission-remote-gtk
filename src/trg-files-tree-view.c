@@ -190,7 +190,7 @@ static void trg_files_tree_view_init(TrgFilesTreeView * self)
     trg_tree_view_reg_column(ttv, TRG_COLTYPE_PROG, FILESCOL_PROGRESS,
                              _("Progress"), "progress", 0);
     trg_tree_view_reg_column(ttv, TRG_COLTYPE_WANTED, FILESCOL_WANTED,
-                             _("Download"), "wanted", 0);
+                             "✓", "wanted", 0);
     trg_tree_view_reg_column(ttv, TRG_COLTYPE_PRIO, FILESCOL_PRIORITY,
                              _("Priority"), "priority", 0);
 
