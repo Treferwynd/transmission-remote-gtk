@@ -274,7 +274,10 @@ trg_status_bar_update_info(TrgStatusBar * sb,
 		uploaded += torrent_get_uploaded(t);
 
 		downloadLeft += torrent_get_left_until_done(t);
-		uploadLeft += torrent_get_size_when_done(t) - torrent_get_uploaded(t);
+		// Doesn't count if uploadedStuff > Size
+		gint64 tmp_upLoadLeft = torrent_get_size_when_done(t) - torrent_get_uploaded(t);
+		if(tmp_upLoadLeft > 0)
+			uploadLeft += torrent_get_size_when_done(t) - torrent_get_uploaded(t);
 
 		gint tmp_eta = torrent_get_eta(t);
 		gint tmp_status = torrent_get_status(t);
