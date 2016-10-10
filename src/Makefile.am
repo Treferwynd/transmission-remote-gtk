@@ -130,7 +130,7 @@ transmission_remote_gtk_SOURCES += win32.rc win32-mailslot.c
 AM_CFLAGS += -O2
 else
 %.1: %.pod
-	        pod2man --release="" --center="Transmission Remote GTK" $< > $@
+	        pod2man --release="$(VERSION)" --center="Transmission Remote GTK" $< > $@
 endif
 
 install-data-local: install-icons update-icon-cache
